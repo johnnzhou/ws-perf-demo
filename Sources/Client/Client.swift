@@ -9,13 +9,13 @@ struct Client {
     static func main() throws {
         let eventloop = MultiThreadedEventLoopGroup(numberOfThreads: 4)
         let url = URL(string: "ws://localhost:8080")!
-        try run(url: url, eventloop: eventloop, usingSmallBuffer: true)
+        try run(url: url, eventloop: eventloop, usingSmallWrites: true)
     }
 
-    private static func run(url: URL, eventloop: EventLoopGroup, usingSmallBuffer: Bool) throws {
+    private static func run(url: URL, eventloop: EventLoopGroup, usingSmallWrites: Bool) throws {
         let promise = eventloop.next().makePromise(of: Void.self)
         do {
-            try WebSocket.connect(to: url, queueSize: usingSmallBuffer ? 1 << 30 : nil, on: eventloop) { ws in
+            try WebSocket.connect(to: url, queueSize: usingSmallWrites ? 1 << 30 : nil, on: eventloop) { ws in
                 var totalBytes: Int = 0
 
                 var currentLoad: Int = 1 << 13
