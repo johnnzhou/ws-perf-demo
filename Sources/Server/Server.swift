@@ -4,6 +4,7 @@ import NIOExtras
 import NIOHTTP1
 import NIOWebSocket
 import NIOCore
+import NIOConcurrencyHelpers
 import WebSocketKit
 
 @main
@@ -13,11 +14,18 @@ struct Server {
 
         let eventloop = MultiThreadedEventLoopGroup.singleton
         let promise = eventloop.next().makePromise(of: Void.self)
+        let count: NIOLockedValueBox<Int> = .init(0)
         do {
             try ServerBootstrap.webSocket(on: eventloop) { _, ws in
 
                 ws.onBinary { _, binary in
                     print("received \(binary.readableBytes) bytes")
+                    count.withLockedValue {
+                        $0 += 1
+                        if $0 == 100 {
+                            ws.close().cascade(to: promise)
+                        }
+                    }
                 }
 
                 ws.onText { _, text in

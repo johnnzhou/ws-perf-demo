@@ -9,7 +9,11 @@ struct Client {
     static func main() throws {
         let eventloop = MultiThreadedEventLoopGroup(numberOfThreads: 4)
         let url = URL(string: "ws://localhost:8080")!
-        try run(url: url, eventloop: eventloop, usingSmallWrites: true)
+
+        let start = NIODeadline.now()
+        try run(url: url, eventloop: eventloop, usingSmallWrites: false)
+        let end = NIODeadline.now()
+        print("Time: \((end - start).nanoseconds / 1_000_000) ms")
     }
 
     private static func run(url: URL, eventloop: EventLoopGroup, usingSmallWrites: Bool) throws {
@@ -28,7 +32,6 @@ struct Client {
 
                 ws.onClose.cascade(to: promise)
             }.wait()
-            print("DONE")
         } catch {
             promise.fail(error)
         }
